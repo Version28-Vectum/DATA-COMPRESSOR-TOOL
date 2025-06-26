@@ -1,0 +1,142 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Function to compress data using Run-Length Encoding
+void compressRLE(const char *inputFile, const char *outputFile) {
+    FILE *in = fopen(inputFile, "r");
+    if (in == NULL) {
+        printf("Error opening input file %s!\n", inputFile);
+        return;
+    }
+
+    FILE *out = fopen(outputFile, "w");
+    if (out == NULL) {
+        printf("Error opening output file %s!\n", outputFile);
+        fclose(in);
+        return;
+    }
+
+    char currentChar, prevChar;
+    int count = 1;
+
+    // Read first character
+    if (fread(&prevChar, sizeof(char), 1, in) != 1) {
+        printf("Input file is empty!\n");
+        fclose(in);
+        fclose(out);
+        return;
+    }
+
+    // Process the file
+    while (fread(&currentChar, sizeof(char), 1, in) == 1) {
+        if (currentChar == prevChar && count < 255) {
+            count++; // Increment count for same character (limit to 255 to avoid overflow)
+        } else {
+            // Write the count and character to output file
+            fwrite(&count, sizeof(char), 1, out);
+            fwrite(&prevChar, sizeof(char), 1, out);
+            prevChar = currentChar;
+            count = 1;
+        }
+    }
+
+    // Write the last run
+    fwrite(&count, sizeof(char), 1, out);
+    fwrite(&prevChar, sizeof(char), 1, out);
+
+    fclose(in);
+    fclose(out);
+    printf("Compression completed: %s -> %s\n", inputFile, outputFile);
+}
+
+// Function to decompress RLE data
+void decompressRLE(const char *inputFile, const char *outputFile) {
+    FILE *in = fopen(inputFile, "r");
+    if (in == NULL) {
+        printf("Error opening input file %s!\n", inputFile);
+        return;
+    }
+
+    FILE *out = fopen(outputFile, "w");
+    if (out == NULL) {
+        printf("Error opening output file %s!\n", outputFile);
+        fclose(in);
+        return;
+    }
+
+    unsigned char count;
+    char currentChar;
+
+    // Read count and character pairs
+    while (fread(&count, sizeof(char), 1, in) == 1 && fread(&currentChar, sizeof(char), 1, in) == 1) {
+        // Write the character 'count' times
+        for (int i = 0; i < count; i++) {
+            fwrite(&currentChar, sizeof(char), 1, out);
+        }
+    }
+
+    fclose(in);
+    fclose(out);
+    printf("Decompression completed: %s -> %s\n", inputFile, outputFile);
+}
+
+// Function to display file contents (for verification)
+void displayFile(const char *filename) {
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL) {
+        printf("Error opening file %s!\n", filename);
+        return;
+    }
+
+    printf("Contents of %s:\n", filename);
+    char c;
+    while (fread(&c, sizeof(char), 1, fp) == 1) {
+        printf("%c", c);
+    }
+    printf("\n");
+    fclose(fp);
+}
+
+int main() {
+    char inputFile[50], compressedFile[50], decompressedFile[50];
+    int choice;
+
+    while (1) {
+        printf("\nRun-Length Encoding Compression Tool\n");
+        printf("1. Compress file\n");
+        printf("2. Decompress file\n");
+        printf("3. Display file contents\n");
+        printf("4. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter input file name: ");
+                scanf("%s", inputFile);
+                printf("Enter compressed output file name: ");
+                scanf("%s", compressedFile);
+                compressRLE(inputFile, compressedFile);
+                break;
+            case 2:
+                printf("Enter compressed file name: ");
+                scanf("%s", compressedFile);
+                printf("Enter decompressed output file name: ");
+                scanf("%s", decompressedFile);
+                decompressRLE(compressedFile, decompressedFile);
+                break;
+            case 3:
+                printf("Enter file name to display: ");
+                scanf("%s", inputFile);
+                displayFile(inputFile);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                exit(0);
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+    return 0;
+}
