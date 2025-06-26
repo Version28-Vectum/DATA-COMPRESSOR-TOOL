@@ -96,3 +96,5 @@ Challenges Faced
 Conclusion
 
 This task has helped me understand how even a basic algorithm like RLE can offer powerful results in real-world data handling. It sharpened my skills in data manipulation, compression logic, and code modularity. With support from YouTube, ChatGPT, and Grok AI, I was able to complete this task efficiently and with a deeper understanding of the importance of compression in computer science.
+OUTPUT
+![Image](https://github.com/user-attachments/assets/96ce5914-b815-4d11-b6a8-3d065a3f3e6f)
